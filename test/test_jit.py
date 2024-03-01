@@ -40,7 +40,7 @@ def test_layer_multiple_out():
     args = [-30., -20.]
     for r, jr in zip(l(args), jl(args)):
         assert math.isclose(r.data, jr, abs_tol=1e-04)
-    
+
 def test_mlp():
     random.seed(10)
     nn = MLP(nin=2, nouts=[1])
@@ -63,4 +63,4 @@ def test_mlp_complex_multiple_out():
     args = [-30., -20.]
     for r, jr in zip(nn(args), jnn(args)):
         assert math.isclose(r.data, jr, abs_tol=1e-04)
-    
+
