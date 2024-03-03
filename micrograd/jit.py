@@ -76,7 +76,7 @@ def _compile(net: Union[Value, Neuron, Layer, MLP]):
     args_types = [ir.F32Type.get()] * args_num
     args_values = [Value(0) for _ in range(args_num)]
 
-    @func.func(*args_types)
+    @func.func(name="net", *args_types)
     def main(*args):
         # This is a bit of a hack to figure out the computation graph.
         # Rather than model the various remaining types such as
@@ -151,7 +151,7 @@ class JittedNet:
         else:
             args = [pointer(pointer(res))] + args
 
-        self.execution_engine.invoke("main", *args)
+        self.execution_engine.invoke("net", *args)
         return res[0] if num_results == 1 else [res[i] for i in range(num_results)]
 
     def __str__(self):
