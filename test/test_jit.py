@@ -1,6 +1,9 @@
 import math
 import random
+import struct
+import subprocess
 import timeit
+import tempfile
 from micrograd.engine import Value
 from micrograd.nn import Neuron, Layer, MLP
 from micrograd.jit import jit
@@ -86,3 +89,21 @@ def test_mlp_performance():
     fast_inference_time = timeit.timeit(fast_inference, number=1000)
     print(f"\nslow: {slow_inference_time}\nfast: {fast_inference_time}")
     assert slow_inference_time > fast_inference_time
+
+
+def test_machine_code():
+    v = Value(7.0)
+    jv = jit(v)
+    assert math.isclose(v.data, jv(), abs_tol=1e-04)
+
+    def float_to_hex(x):
+        b = bytearray.fromhex(struct.pack('<f', x).hex())
+        b.reverse()
+        return b.hex()
+    with tempfile.NamedTemporaryFile() as tmp:
+        jv.execution_engine.dump_to_object_file(tmp.name)
+        result = subprocess.run(
+            ['objdump', '-d', '--disassemble=_mlir_net', tmp.name], capture_output=True)
+        output = result.stdout.decode('utf-8')
+        print(output)
+        assert float_to_hex(v.data) in output
